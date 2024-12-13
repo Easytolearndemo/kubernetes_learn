@@ -89,7 +89,7 @@ spec:
 ```kubectl get pods```
 
 - Troubleshooting if pod is not create
-```kubectl describe pod nginx```
+```kubectl describe pod nginx-pod```
 
 - know all the label particular pod
 ```kubectl get pods nginx-pod --show-labels```
@@ -104,7 +104,7 @@ spec:
 ```kubectl get nodes -o wide```
 
 - Delete pod
-```kubectl delete pod nginx```
+```kubectl delete pod nginx-pod```
 
 ======================================================================================
 
