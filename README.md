@@ -141,9 +141,9 @@ spec:
 
 
 - Know how many deployment running
-```kubectel get deploy```
+```kubectl get deploy```
 
 - return all the object running in our cluster
-```kubectel get all```
+```kubectl get all```
 
 
