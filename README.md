@@ -1,5 +1,13 @@
 ## Local used in Kubernetes
 
+kubectl - https://kubernetes.io/docs/tasks/tools/#kubectl
+kind - https://kind.sigs.k8s.io/docs/user/quick-start/
+
+Below domains 
+https://kubernetes.io/docs
+https://kubernetes.io/blog/
+Kubernetes cheat sheet : https://kubernetes.io/docs/reference/kubectl/quick-reference/
+
 ## Install Kind
 ```
 # For AMD64 / x86_64
