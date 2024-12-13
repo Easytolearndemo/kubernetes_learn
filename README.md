@@ -27,7 +27,7 @@ sudo mv ./kind /usr/local/bin/kind
 ```kubectl version --client```
 
 ## Check how many nodes are running
-```Kubectl get nodes```
+```kubectl get nodes```
 
 
 ## Creating and configure multinode cluster
@@ -43,13 +43,16 @@ nodes:
 - role: worker
 ```
 ## Run command to apply config.yml file
-```kind create cluster --image kindest/node:v1.29.8@sha256:d46b7aa29567e93b27f7531d258c372e829d7224b25e3fc6ffdefed12476d3aa --name cla-cluster2 --configconfig.yml```
+```kind create cluster --image kindest/node:v1.29.8@sha256:d46b7aa29567e93b27f7531d258c372e829d7224b25e3fc6ffdefed12476d3aa --name cla-cluster2 --config config.yml```
 
 ## Check how many clusters are running
 ```kubectl config get-contexts```
 
 ## Switch to different cluster
 ```kubectl config use-context my-cluster-name```
+
+## Delete cluster
+```kind delete cluster --name cla-cluster1```
 
 =======================================================================================
 
