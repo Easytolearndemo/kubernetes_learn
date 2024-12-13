@@ -51,3 +51,57 @@ nodes:
 ## Switch to different cluster
 ```kubectl config use-context my-cluster-name```
 
+=======================================================================================
+
+- Imperative way create nginx pod
+```kubectl run nginx-pod --image=nginx:latest```
+
+- To know what are version(apiVersion) are support
+```kubectl explain pod```
+
+- Declarative way create nginx pod
+
+```YAML
+# This is a sample pod yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod #anything we can used
+  labels: # in labels we can used anything project spacific 
+    env: demo
+    type: frontend
+spec:
+  containers:
+  - name: nginx-container-test # container name for image
+    image: nginx # docker image
+    ports:
+    - containerPort: 80 # which port is used for running nginx
+```
+
+- Create pod
+```kubectl apply pod.yml```
+
+- To get all pod or know which pod are running (contanaer creating -> running)
+```kubectl get pods```
+
+- Troubleshooting if pod is not create
+```kubectl describe pod nginx```
+
+- know all the label particular pod
+```kubectl get pods nginx-pod --show-labels```
+
+- GO to inside container
+```kubectl exec -it nginx-pod -- sh```
+
+- know which node my pod is running
+```kubectl get pods -o wide```
+
+- know which node is running with description
+```kubectl get nodes -o wide```
+
+- Delete pod
+```kubectl delete pod nginx```
+
+======================================================================================
+
