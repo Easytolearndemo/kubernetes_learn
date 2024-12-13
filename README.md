@@ -80,7 +80,7 @@ spec:
 ```
 
 - Create pod
-```kubectl apply pod.yml```
+```kubectl apply -f pod.yml```
 
 - To get all pod or know which pod are running (contanaer creating -> running)
 ```kubectl get pods```
