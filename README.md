@@ -108,3 +108,42 @@ spec:
 
 ======================================================================================
 
+## Deployment 
+- Deployment create -> replicaset -> then create pods
+
+
+## create deployment using yml
+
+``` YAML
+apiVersion: apps/v1
+kind:  Deployment
+metadata:
+  name: nginx-deploy
+  labels:
+    env: demo
+spec:
+  template:
+    metadata:
+      labels:
+        env: demo
+      name: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+  replicas: 3
+  selector:
+    matchLabels:
+      env: demo
+```
+
+
+- Know how many deployment running
+```kubectel get deploy```
+
+- return all the object running in our cluster
+```kubectel get all```
+
+
