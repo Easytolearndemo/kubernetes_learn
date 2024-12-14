@@ -153,10 +153,12 @@ spec:
 ======================================================================================
 
 ## NameSpace
-Avoid accidental deletion/modification
-Separated by resource type or environment or domain and so on
-By default creating under default namespace
-We can create same resource(pod, service, etc...) like (same name) under namespace no conflit happend
+- Avoid accidental deletion/modification
+- Separated by resource type or environment or domain and so on
+- By default creating under default namespace
+- We can create same resource(pod, service, etc...) like (same name) under namespace no conflit happend
+
+
 
 - get all namespace
 ```kubectl get ns```
