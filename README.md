@@ -147,3 +147,31 @@ spec:
 ```kubectl get all```
 
 
+=====================================================================================
+
+
+======================================================================================
+
+## NameSpace
+Avoid accidental deletion/modification
+Separated by resource type or environment or domain and so on
+By default creating under default namespace
+We can create same resource(pod, service, etc...) like (same name) under namespace no conflit happend
+
+- get all namespace
+```kubectl get ns```
+
+- know which are server(pod, service, etc...) are running under namespace
+```kubectl all -n <namespace-name>```
+
+- create namespace
+```kubectl create ns demo```
+
+- create resource under the namespace
+```create deploy nginx-demo --image=nginx -n demo```
+
+- get all deploy under namespace
+```get deploy -n demo```
+
+
+===========================================================================================
