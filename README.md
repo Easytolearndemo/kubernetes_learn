@@ -149,6 +149,108 @@ spec:
 
 =====================================================================================
 
+## Services
+There are 4 types of Services:
+- ClusterIP(For Internal access)
+- NodePort(To access the application on a particular port)
+- LoadBalancer(To access the application on a domain name or IP address without using the port number)
+- External (To use an external DNS for routing)
+
+
+### Only for Kind cluster (AWS, GCP) not required
+If you use a Kind cluster, if we want to perform Service means expose port then the following configuration is required. Use the below config to create a new Kind cluster
+
+```vim cluster.yml```
+
+```yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 30001
+    hostPort: 30001
+- role: worker
+- role: worker
+```
+
+
+### ClusterIP
+
+#### Sample YAML for ClusterIP
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: cluster-svc
+  labels:
+    env: demo
+spec:
+  ports:
+  - port: 80
+  selector:
+    env: demo
+```
+
+### Nodeport
+
+#### Sample YAML for Nodeport
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodeport-svc
+  labels:
+    env: demo
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 30001
+    port: 80
+    targetPort: 80
+  selector:
+    env: demo
+```
+
+### Loadbalancer
+
+#### Sample YAML for Loadbalancer
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-svc
+  labels:
+    env: demo
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    env: demo
+```
+
+- To get all service
+```kubectl get svc```
+
+- To describe particular service
+```kubectl describe svc <service name>```
+
+- Check in command service is access or not
+```curl localhost:3001```
+
+- To know everything about pod like ip, whice node running, under wich name space, etc...
+```kubectl describe pod <pod name>```
+
+- To know everything about service like port, targetPort, endpoint(here all pod ip is there, that running under that(what name we are using in command) spacific service), etc...
+```kubectl describe svc <svc name>```
+
+- To know the pod logs(if any error is comming)
+```kubectl logs <pod name> -f``` 
+
 
 ======================================================================================
 
