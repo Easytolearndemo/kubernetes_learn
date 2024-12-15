@@ -767,4 +767,154 @@ spec:
 
 ```
 
+=========================================Day 17==============================================================
 
+### Kubernetes Autoscaling | HPA Vs VPA
+
+## Autoscaling types
+![Screenshot from 2024-12-15 20-38-52](https://github.com/user-attachments/assets/5e61ca55-d6fa-4617-8549-dcdc61e72de5)
+
+
+## HPA v/S VPA
+
+![image](https://github.com/user-attachments/assets/fe1dfff3-8781-459a-8828-b150a88e823b)
+
+
+## Deploy.yaml
+````
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-apache
+spec:
+  selector:
+    matchLabels:
+      run: php-apache
+  template:
+    metadata:
+      labels:
+        run: php-apache
+    spec:
+      containers:
+      - name: php-apache
+        image: registry.k8s.io/hpa-example
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 200m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-apache
+  labels:
+    run: php-apache
+spec:
+  ports:
+  - port: 80
+  selector:
+    run: php-apache
+
+    ```
+
+## hpa.yaml
+
+```
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-apache
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: php-apache
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+```
+
+
+# If CPU utilization mort han 50% then pod will increase automatically (minmum pod 1 and maximum pod 10)
+
+```kubectl autoscale deployment php-apache --cpu-percent=50 --min=1 --max=10```
+
+# Using this command we can generate load 
+``` kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://php-apache; done" ```
+
+# To know CPU utilization
+```kubectl get hpa php-apache --watch```
+
+
+=====================================================================Day-18==================================================================================
+
+
+=====================================================================Day-19===================================================================================
+
+### Config map in Kubernetes?
+- When your manifest grows it becomes difficult to manage multiple env vars
+- You can take this out of the manifest and store as a config map object in the key-value pair
+- Then you can inject that config map into the pod
+- You can reuse the same config map into multiple pods
+
+
+
+## Createing configmap imparative way
+
+```kubectl create cm <configmapname> --from-literal=color=blue \
+--from-literal=color=red```
+
+## Show config map
+```kubectl get cm```
+
+
+## declarative way config map
+
+## cmap.yml
+```
+apiVersion: v1
+data:
+  firstname: piyush
+  lastname: sachdeva
+kind: ConfigMap
+metadata:
+  name: app-cm
+
+  ```
+
+## use-conf-map.yml
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app.kubernetes.io/name: MyApp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox:1.28
+    env:
+    - name: FIRSTNAME
+      valueFrom:
+        configMapKeyRef:
+          name: app-cm
+          key: firstname
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+    ```
+
+### We can also used simple way
+- doc
+- Follow the doc: https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data
+
+=============================================Day-20=================================================
