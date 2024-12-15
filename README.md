@@ -1,3 +1,5 @@
+=============================Day 6========================================================
+
 ## Local used in Kubernetes
 
 kubectl - https://kubernetes.io/docs/tasks/tools/#kubectl
@@ -54,7 +56,7 @@ nodes:
 ## Delete cluster
 ```kind delete cluster --name cla-cluster1```
 
-=======================================================================================
+==================================Day 7=====================================================
 
 - Imperative way create nginx pod
 ```kubectl run nginx-pod --image=nginx:latest```
@@ -106,7 +108,7 @@ spec:
 - Delete pod
 ```kubectl delete pod nginx-pod```
 
-======================================================================================
+==================================Day 8====================================================
 
 ## Deployment 
 - Deployment create -> replicaset -> then create pods
@@ -147,7 +149,7 @@ spec:
 ```kubectl get all```
 
 
-=====================================================================================
+=======================================Day 9==============================================
 
 ## Services
 There are 4 types of Services:
@@ -252,7 +254,7 @@ spec:
 ```kubectl logs <pod name> -f``` 
 
 
-======================================================================================
+======================================Day 10================================================
 
 ## NameSpace
 - Avoid accidental deletion/modification
@@ -278,11 +280,14 @@ spec:
 ```get deploy -n demo```
 
 
-===========================================================================================
+=======================================Day 11====================================================
 
 ### Multi Container Pod Kubernetes - Sidecar vs Init Container
 
 - After create "myservice", mydb service then only pod(myapp-pod) is create other wise pod(myapp-pod) panding state
+
+## myservice.default.svc.cluster.local how i can get this
+go to myservice pod -> ```kubectl exec -it <pod name>``` -> cat /etc/resolv.conf
 
 ```
 apiVersion: v1
@@ -310,5 +315,172 @@ spec:
     args: ['until nslookup mydb.default.svc.cluster.local; do echo waiting for mydb; sleep 2; done']
 ```
 
-=========================================================================================================================
+=======================================================Day 12==================================================================
 
+### What is a daemonset?
+- A daemon set is another type of Kubernetes object that controls pods. Unlike deployment, the DS automatically deploys 1 pod to each available node. You don't need to update the replica based on demand.
+- If you create a DS in a cluster of 5 nodes, then 5 pods will be created.
+- If you add another node to the cluster, a new pod will be automatically created on the new node.
+
+
+```
+apiVersion: apps/v1
+kind:  DaemonSet
+metadata:
+  name: nginx-ds
+  labels:
+    env: demo
+spec:
+  template:
+    metadata:
+      labels:
+        env: demo
+      name: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+  selector:
+    matchLabels:
+      env: demo
+
+```
+==============================================Day 13===================================================
+
+### Manual scheduling pod particular node
+- Manual scheduling in Kubernetes involves assigning a pod to a specific node rather than scheduler decide.
+
+- ```nodeName``` Field: Use this field in the pod specification to specify the node where the pod should run.
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: manual-scheduled-pod
+spec:
+  nodeName: worker-node-1
+  containers:
+  - name: nginx
+    image: nginx
+```
+
+### Labels
+- Labels are key-value pairs attached to Kubernetes objects like pods, services, and deployments. They help organize and group resources based on criteria that make sense to you.
+
+- Add label in node
+```kubectl label node <node name> gpu=true```
+
+## Show all pod lebel
+```kubectl get pod --show-labels```
+
+### Selectors
+- Selectors filter Kubernetes objects based on their labels. This is incredibly useful for querying and managing a subset of objects that meet specific criteria.
+
+## Filter pod using selector
+Pods: ```kubectl get pods --selector app=my-app```
+
+### Labels vs. Namespaces 🌍
+- Labels: Organize resources within the same or across namespaces.
+- Namespaces: Provide a way to isolate resources from each other within a cluster.
+========================================================Day 14========================================================================
+
+![Screenshot from 2024-12-15 11-40-26](https://github.com/user-attachments/assets/872c2cb7-2bdd-4783-9f75-1abb64ddb90f)
+
+
+### Taints and Tolerations
+- Taints Apply -> Nodes
+- Tolerations Apply -> Pods
+
+- pods cannot be scheduled on tainted nodes unless they have a special permission called toleration. When a toleration on a pod matches with the taint on the node then only that pod will be scheduled on that node.
+
+## Add Tainting a Node:
+
+```bash
+kubectl taint nodes node1 key=gpu:NoSchedule
+```
+
+This command taints node1 with the key "gpu" and the effect "NoSchedule." Pods without a toleration for this taint won't be scheduled there.
+
+## To remove the taint
+
+```bash
+kubectl taint nodes node1 key=gpu:NoSchedule-
+```
+
+### Adding toleration to the pod:
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: redis
+  name: redis
+spec:
+  containers:
+  - image: redis
+    name: redis
+  tolerations:
+  - key: "gpu"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+
+```
+
+### Labels vs Taints/Tolerations
+- Labels group nodes based on size, type,env, etc. Unlike taints, labels don't directly affect scheduling but are useful for organizing resources.
+
+### Limitations to Remember 🚧
+- Taints and tolerations are powerful tools, but they have limitations. They cannot handle complex expressions like "AND" or "OR." So, what do we use in that case? We use a combination of Taints, tolerance, and Node affinity, which we will discuss in the next video.
+
+===============================================================Day 15=============================================================
+
+### Node affinity
+
+
+Specify Node Labels: Define a list of required node labels (e.g., disktype=ssd) in your pod spec.
+
+```kubectl label node <node name> disktype=ssd```
+
+
+### Properties in Node Affinity
+requiredDuringSchedulingIgnoredDuringExecution - pod is sudule if label match
+preferredDuringSchedulingIgnoredDuringExecution - pod issudule if label match otherwise any node
+
+
+
+### Targeting SSD Nodes 💾
+Suppose your pod needs high-speed storage. You can create a deployment with a Node Affinity rule that targets nodes labeled disktype=ssd.
+
+YAML Configuration:
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: redis
+  name: redis-3
+spec:
+  containers:
+  - image: redis
+    name: redis
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+              - key: disktype
+                operator: In
+                values:
+                - ssd
+
+```
+
+===========================================================Day 16=======================================================
