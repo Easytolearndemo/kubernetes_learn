@@ -489,8 +489,15 @@ spec:
 
 After pod alcated in nodes if we don't have no resource to alcocated new pod then we can get insuffent error in pod.
 
+![Screenshot from 2024-12-15 15-55-55](https://github.com/user-attachments/assets/c6321366-2e25-41bb-b01e-edb63b6433d2)
+
 
 Suppose in node one pod are running, when more trafic will come then pod consume all resource(cpu, memory) from node, if we don't have resource in node for pod then we can get OOM error.
+
+![Screenshot from 2024-12-15 16-00-29](https://github.com/user-attachments/assets/4c36c7bd-4ef0-48df-a153-263bef237987)
+
+![Screenshot from 2024-12-15 16-01-01](https://github.com/user-attachments/assets/297e0934-b796-4dcc-aef8-df924fbbf670)
+
 
 To avoid all this senaro we are using request and limit, for this node will not enter node falior insted of node pod will crase.
 
@@ -708,6 +715,9 @@ spec:
 metrics-server pod is running in kube-system name space, if we want to see then we have to run following command
 
 ```kubectl get pod -n kube-system```
+
+![Screenshot from 2024-12-15 16-16-26](https://github.com/user-attachments/assets/2c5f3e21-938e-4d91-ac49-79805d2012ce)
+
 
 If we want to see CPU memory utilization for nodes, we can see data after run following command because of metrics-server
 ```kubectl top nods```
