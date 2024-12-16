@@ -857,6 +857,135 @@ spec:
 
 =====================================================================Day-18==================================================================================
 
+### Health Probes 
+
+## What are health probes in Kubernetes?
+- Health probes monitor your Kubernetes applications and take necessary actions to recover from failure, so user can not facing any problem
+- To ensure your application is highly available and self-healing
+
+## Type of health probes in Kubernetes
+- Readiness (Ensure application is ready, before serving trafic to the user)
+- Liveness ( monitor our application one sertan time like - every 10sec, 15sec.  Restart the application if health checks fail)
+- Startup ( Probes for legacy applications that need a lot of time to start)
+
+
+- First Startup Probes will active afterthat Readiness, Liveness Probes will active.
+
+## Types of health checks they perform?
+- HTTP/TCP/command
+
+
+## liveness command
+
+- In this example every 30 sec pod will fail and restart we can see using ```kubectl get po --watch``` in this command
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: liveness-exec
+spec:
+  containers:
+  - name: liveness
+    image: registry.k8s.io/busybox
+    args:
+    - /bin/sh
+    - -c
+    - touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600
+    livenessProbe:
+      exec:
+        command:
+        - cat 
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 5
+
+```
+
+initialDelaySeconds: 5 -> first health check happend after 5sec(why this because application take time to boot and set averything little time)
+periodSeconds: 5 -> Every 5sec check application returing healthy response or not
+
+## we can lively watch the pod
+```kubectl get po --watch```
+
+## describe pod (we can seen why pod will faild)
+```kubectl describe po <pod name>```
+
+## iveness-http and readiness-http
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello
+spec:
+  containers:
+  - name: liveness
+    image: registry.k8s.io/e2e-test-images/agnhost:2.40
+    args:
+    - liveness
+    livenessProbe:
+      httpGet:
+        path: /healthz # inside container folder path
+        port: 8080 # open port 8080 for container folder path
+      initialDelaySeconds: 3
+      periodSeconds: 3
+    readinessProbe: # if readinessProbe heldhy then only then only workload will sharf
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      ```
+
+## Fource fully apply the pod
+```kubectl apply --force -f <file name>```
+
+
+## liveness-tcp
+
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-pod
+  labels:
+    app: tcp-pod
+spec:
+  containers:
+  - name: goproxy
+    image: registry.k8s.io/goproxy:0.1
+    ports:
+    - containerPort: 8080
+    livenessProbe:
+      tcpSocket:
+        port: 8000
+      initialDelaySeconds: 10
+      periodSeconds: 5
+```
+
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-pod
+  labels:
+    app: tcp-pod
+spec:
+  containers:
+  - name: goproxy
+    image: registry.k8s.io/goproxy:0.1
+    ports:
+    - containerPort: 8080
+    livenessProbe:
+      tcpSocket:
+        port: 3000
+      initialDelaySeconds: 10
+      periodSeconds: 5
+```
 
 =====================================================================Day-19===================================================================================
 
@@ -918,3 +1047,5 @@ spec:
 - Follow the doc: https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data
 
 =============================================Day-20=================================================
+
+
