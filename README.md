@@ -1095,9 +1095,9 @@ spec:
 create yml file command
 ```kubectl get csr adam -o yml > issuecert.yml```
 
-# from issuecert.yml we have one request key taht value we have to copy and generate base64 encoded -> then we can share that base64 encoded key to the new user
+#### from issuecert.yml we have one request key taht value we have to copy and generate base64 encoded -> then we can share that base64 encoded key to the new user
 
-# create base64 encoded key
+#### create base64 encoded key
 
 copy thet request key -> ```echo "<past key>" | base64 -d``` -> enter from keybord
 
