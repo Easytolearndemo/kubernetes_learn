@@ -1048,4 +1048,60 @@ spec:
 
 =============================================Day-20=================================================
 
+## Suppose any new user comes as a kubarnates adminstrator, kubarnates admin need to give a permison to work
+
+1) new used net create the certificate request.
+- To generate a key file
+```openssl genrsa -out adam.key 2048```
+
+2) To generate a csr file
+```openssl req -new -key adam.key -out adam.csr -subj "/CN=adam"```
+
+csr.yml
+
+```
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: adam
+spec:
+  that following key that generate from new user, this suld be .csr key that user generate
+  request: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1ZqQ0NBVDRDQVFBd0VURVBNQTBHQTFVRUF3d0dZVzVuWld4aE1JSUJJakFOQmdrcWhraUc5dzBCQVFFRgpBQU9DQVE4QU1JSUJDZ0tDQVFFQTByczhJTHRHdTYxakx2dHhWTTJSVlRWMDNHWlJTWWw0dWluVWo4RElaWjBOCnR2MUZtRVFSd3VoaUZsOFEzcWl0Qm0wMUFSMkNJVXBGd2ZzSjZ4MXF3ckJzVkhZbGlBNVhwRVpZM3ExcGswSDQKM3Z3aGJlK1o2MVNrVHF5SVBYUUwrTWM5T1Nsbm0xb0R2N0NtSkZNMUlMRVI3QTVGZnZKOEdFRjJ6dHBoaUlFMwpub1dtdHNZb3JuT2wzc2lHQ2ZGZzR4Zmd4eW8ybmlneFNVekl1bXNnVm9PM2ttT0x1RVF6cXpkakJ3TFJXbWlECklmMXBMWnoyalVnald4UkhCM1gyWnVVV1d1T09PZnpXM01LaE8ybHEvZi9DdS8wYk83c0x0MCt3U2ZMSU91TFcKcW90blZtRmxMMytqTy82WDNDKzBERHk5aUtwbXJjVDBnWGZLemE1dHJRSURBUUFCb0FBd0RRWUpLb1pJaHZjTgpBUUVMQlFBRGdnRUJBR05WdmVIOGR4ZzNvK21VeVRkbmFjVmQ1N24zSkExdnZEU1JWREkyQTZ1eXN3ZFp1L1BVCkkwZXpZWFV0RVNnSk1IRmQycVVNMjNuNVJsSXJ3R0xuUXFISUh5VStWWHhsdnZsRnpNOVpEWllSTmU3QlJvYXgKQVlEdUI5STZXT3FYbkFvczFqRmxNUG5NbFpqdU5kSGxpT1BjTU1oNndLaTZzZFhpVStHYTJ2RUVLY01jSVUyRgpvU2djUWdMYTk0aEpacGk3ZnNMdm1OQUxoT045UHdNMGM1dVJVejV4T0dGMUtCbWRSeEgvbUNOS2JKYjFRQm1HCkkwYitEUEdaTktXTU0xMzhIQXdoV0tkNjVoVHdYOWl4V3ZHMkh4TG1WQzg0L1BHT0tWQW9FNkpsYWFHdTlQVmkKdjlOSjVaZlZrcXdCd0hKbzZXdk9xVlA3SVFjZmg3d0drWm89Ci0tLS0tRU5EIENFUlRJRklDQVRFIFJFUVVFU1QtLS0tLQo= 
+  signerName: kubernetes.io/kube-apiserver-client
+  expirationSeconds: 86400  # expiration seconds one day
+  usages:
+  - client auth
+
+```
+- in .csr file key is a plan text format, we have to convert base64 encoded and in a single line
+
+```cat adam.csr | base64 | tr -d "\n"```
+
+- From uper command we get one key, that key old kubarnates adminstrator add in csr.yml in request as a value.
+
+- then i have to apply that csr.yml
+```kubectl -f csr.yml```
+
+- if we want to see all the certificates
+```kubectl get csr```
+
+- we can see from uper command pending status, that means kubarnates adminstrator need to approve, following command
+## To approve a csr
+```kubectl certificate approve <certificate-signing-request-name>```
+
+## To deny a csr
+```kubectl certificate deny <certificate-signing-request-name>```
+
+create yml file command
+```kubectl get csr adam -o yml > issuecert.yml```
+
+# from issuecert.yml we have one request key taht value we have to copy and generate base64 encoded -> then we can share that base64 encoded key to the new user
+
+# create base64 encoded key
+
+copy thet request key -> ```echo "<past key>" | base64 -d``` -> enter from keybord
+
+that generate key we have to share to the user
+
+
 
