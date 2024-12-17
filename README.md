@@ -1103,5 +1103,185 @@ copy thet request key -> ```echo "<past key>" | base64 -d``` -> enter from keybo
 
 that generate key we have to share to the user
 
+===================================Day 23===============================================================
+
+in day-21 video we create one user adam using that user we are doing practical
+
+#### To check i have access or not get pod
+```kubectl auth can-i get pod```
+
+#### which user i am login
+```kubectl auth whoami```
+
+#### chack adam has access or not get pod (admin can do this command and get desier output)
+```kubectl auth can-i get pod --as adam```
 
 
+#### YAML for role
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"] # where we can apply authorization
+  verbs: ["get", "watch", "list"] # type of access what we want to give to the user
+
+  ```
+
+- if apiVersion: v1 like this only "v1" after v1 nothing is there means after "/" then before "/" is core api group
+- if apiVersion: rbac.authorization.k8s.io/v1 like this then "rbac.authorization.k8s.io" this one named api group
+
+# After apply .yml file
+
+#### we can know averything about role, in this command only role are created, but not apply
+```kubectl describe role pod-reader```
+
+# Role binding
+
+#### YAML for role binding
+```
+apiVersion: rbac.authorization.k8s.io/v1
+# This role binding allows "jane" to read pods in the "default" namespace.
+# You need to already have a Role named "pod-reader" in that namespace.
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+# You can specify more than one "subject"
+- kind: User
+  name: adam # "name" is case sensitive
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  # "roleRef" specifies the binding to a Role / ClusterRole
+  kind: Role #this must be Role or ClusterRole
+  name: pod-reader # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+```
+
+#### using this yml we can apply role to the user 
+
+#### Get role binding
+```kubectl get rolebinding```
+
+#### describe rolebinding
+```kubectl describe rolebinding read-pods```
+
+## **************************************************************************************
+#### How to login as a adam user 
+```kubectl config set-credentials adam \
+--client-key=../day22-kubeconfig/adam.key \
+--client-certificate=../day22-kubeconfig/adam.crt
+```
+#### using this command one context is created, the name is adam
+```kubectl config set-context adam --cluster=kind-cka-cluster2 \
+--user=adam
+```
+#### get all the avalible context
+```kubectl config get-contexts
+```
+#### Now switch to adam context
+```kubectl config use-context adam```
+
+#### Now check which user i login
+```kubectl auth whoami```
+
+#### check clint certificate(adam) valid or not(expair or not)
+```openssl x509 -noout -dates -in ../day22-kubeconfig/adam.crt```
+
+====================================================Day 24===================================================================
+
+#### To check namespace label role
+```kubectl api-resources --namespaced=true```
+
+#### To check cluster label role
+```kubectl api-resources --namespaced=false```
+
+#### To check cluster label node access or not(i am in login as a kubarnates admin)
+```kubectl auth can-i get nodes --as adam```
+
+#### Creating node permision(role)
+```kubectl create clusterrole node-reader --verb=get,list,watch --resource=node```
+
+#### To describe the node label role
+```kubectl describe clusterrole node-reader```
+
+#### To create clusterrole binding
+```kubectl create clusterrolebinding node-reader-binding --clusterrole=node-reader --user=adam```
+
+#### To get all clusterrole binding
+```kubectl get clusterrolebinding |grep reader```
+
+#### To describe clusterrole binding
+```kubectl describe clusterrolebinding reader-binding```
+
+## to login adam user
+#### check login user
+```kubectl config get-contexts```
+
+#### To check cluster label node access or not(i am in login as a kubarnates admin)
+```kubectl auth can-i get nodes --as adam```
+
+#### Now switch context
+```kubectl config use-context adam```
+
+#### check adam user can get, describe the node or not
+```kubectl get nodes```
+
+=============================Day-25=====================================
+# Service Account 
+service account means it is not a human user, it is a non-human user(like-jankins,etc...)
+
+
+#### To get all the service Account
+```kubectl get sa```
+
+#### to get all service accout under the namespace(default)
+```kubectl get sa -A |grep default```
+
+#### to describe particular service account(here default is the service account name)
+```kubectl describe sa default```
+
+#### To create new service account
+```kubectl create sa build-sa```
+
+#### to describe particular service account(here build-sa is the service account name)
+```kubectl describe sa build-sa```
+
+## to create token the following the yml
+
+#### secret.yml
+```
+apiVersion: v1
+kind: Secret                                                                                                                                                                                                                         kind: Secret
+metadata:
+ name: build-robot-secret
+annotations:                                                                                                                                                                                                                                   
+   kubernetes.io/service-account.name: build-sa
+type: kubernetes.io/service-account-token
+```
+#### to get all the secret
+```kubectl get secret```
+
+#### to describe the secret
+```kubectl describe secret build-robot-secret```
+
+#### to check pod will get or not using service account
+```kubectl auth can-i get pods --as build-sa```
+
+#### to create role for the service account
+```kubectl create role build-role --verb=get,list,watch --resource=pod```
+
+
+#### to create role buinding for the service account
+```kubectl create rolebinding rb --role=build-role --user=build-sa```
+
+#### to check pod will get or not using service account
+```kubectl auth can-i get pods --as build-sa```
+
+#### to delete the service account
+```kubectl delete sa build-sa```
