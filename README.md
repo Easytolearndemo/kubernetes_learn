@@ -1285,3 +1285,183 @@ type: kubernetes.io/service-account-token
 
 #### to delete the service account
 ```kubectl delete sa build-sa```
+
+
+===========================================Day 26============================================
+
+#### create cluster for networking using yml
+
+kind.yml
+
+```
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 30001
+    hostPort: 30001
+- role: worker
+- role: worker
+networking:
+  disableDefaultCNI: true # we are desible default CNI
+  podSubnet: 192.168.0.0/16
+
+```
+
+#### create cluster for network
+```kind create cluster --name=cka-new --config=kind.yml```
+
+#### Install Calico
+```kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.1/manifests/calico.yaml```
+
+#### Document to install calico on your cluster
+https://docs.tigera.io/calico/latest/getting-started/kubernetes/kind
+
+#### using this following yml we can create pod, deployment, service
+
+app.yml
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend
+  labels:
+    role: frontend
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - name: http
+      containerPort: 80
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    role: frontend
+spec:
+  selector:
+    role: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backend
+  labels:
+    role: backend
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - name: http
+      containerPort: 80
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    role: backend
+spec:
+  selector:
+    role: backend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  labels:
+    name: mysql
+spec:
+  selector:
+    name: mysql
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql
+  labels:
+    name: mysql
+spec:
+  containers:
+    - name: mysql
+      image: mysql:latest
+      env:
+        - name: "MYSQL_USER"
+          value: "mysql"
+        - name: "MYSQL_PASSWORD"
+          value: "mysql"
+        - name: "MYSQL_DATABASE"
+          value: "testdb"
+        - name: "MYSQL_ROOT_PASSWORD"
+          value: "verysecure"
+      ports:
+        - name: http
+          containerPort: 3306
+          protocol: TCP
+
+```
+
+
+go to inside fontend pod
+```kubectl exec -it frontend -- bash``` 
+
+After inside fontend pod, we have to curl any endpoind like - backend, database
+fontend -> backend
+```curl backend:80```
+
+fontend -> database
+  In this case we have to install telnet
+  ```apt-get update&& apt-get install telnet -y```
+  now we can hit in db
+  ```telnet db 3306```
+
+Using following yml we can access only backend database not frontend
+
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-test
+spec:
+  podSelector:
+    matchLabels:
+      name: mysql
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: backend
+    ports:
+    - port: 3306
+
+```
+
+Now we can't connect frontend to DB
+we can connect only backend to DB
+
+
+=========================================Day 27===========================================================
+
+
